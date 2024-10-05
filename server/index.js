@@ -20,7 +20,7 @@ function verifyToken(req, res, next) {
     const token = req.headers.token;
 
     if (!token) {
-        res.status(403).json({
+        res.status(401).json({
             message: "unauthorized user",
         });
         return;
@@ -28,7 +28,7 @@ function verifyToken(req, res, next) {
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(403).json({
+            return res.status(401).json({
                 message: "Invalid token",
             });
         }
@@ -70,7 +70,7 @@ app.post("/signup", async (req, res) => {
             message: "you are signed up",
         });
     } else {
-        res.json({
+        res.status(409).json({
             message: "username already exists",
         });
     }
@@ -94,13 +94,13 @@ app.post("/login", async (req, res) => {
             JWT_SECRET
         );
 
-        res.json({
+        res.status(200).json({
             message: "You are logged in",
             email: email,
             token: token,
         });
     } else {
-        res.json({
+        res.status(401).json({
             message: "user doesn't exist",
         });
     }
@@ -119,7 +119,7 @@ app.get("/me", verifyToken, async (req, res) => {
             email: isUser?.email,
         });
     } else {
-        res.json({
+        res.status(401).json({
             message: "invalid token",
             token: token,
         });

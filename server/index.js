@@ -1,16 +1,18 @@
+require("dotenv").config();
+
 const express = require("express");
-const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 const zod = require("zod");
-const UserModel = require("./db");
 const cors = require("cors");
 
-const app = express();
-const JWT_SECRET = "helloworld";
+const MONGODB_URL = process.env.DATABASE_URL;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-mongoose.connect(
-    "mongodb+srv://tahiriqbal:X4ZgY9IwcVnm784H@cluster0.qn51z.mongodb.net/jwt-auth"
-);
+mongoose.connect(`${MONGODB_URL}/jwt-auth`);
+const UserModel = require("./db");
+
+const app = express();
 
 app.use(express.json());
 app.use(cors());
@@ -124,14 +126,6 @@ app.get("/me", verifyToken, async (req, res) => {
             token: token,
         });
     }
-});
-
-app.get("/all", async (req, res) => {
-    const users = await UserModel.find({});
-
-    res.json({
-        users,
-    });
 });
 
 app.listen(3001, () => console.log("listing on port 3001"));

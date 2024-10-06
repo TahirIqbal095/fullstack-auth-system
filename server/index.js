@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const zod = require("zod");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
 
 const MONGODB_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -57,6 +58,8 @@ app.post("/signup", async (req, res) => {
         return;
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const isUser = await UserModel.findOne({
         email: email,
     });
@@ -65,7 +68,7 @@ app.post("/signup", async (req, res) => {
         await UserModel.create({
             name: name,
             email: email,
-            password: password,
+            password: hashedPassword,
         });
 
         res.json({
@@ -84,11 +87,11 @@ app.post("/login", async (req, res) => {
 
     const isUser = await UserModel.findOne({
         email: email,
-        password: password,
     });
 
-    if (isUser) {
-        // generate token
+    const passwordMatch = await bcrypt.compare(password, isUser?.password);
+
+    if (isUser && passwordMatch) {
         const token = jwt.sign(
             {
                 email: email,
@@ -98,7 +101,6 @@ app.post("/login", async (req, res) => {
 
         res.status(200).json({
             message: "You are logged in",
-            email: email,
             token: token,
         });
     } else {
@@ -109,7 +111,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/me", verifyToken, async (req, res) => {
-    const email = req.user.email;
+    const email = req?.user?.email;
 
     const isUser = await UserModel.findOne({
         email: email,

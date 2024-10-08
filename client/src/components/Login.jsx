@@ -1,5 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -7,6 +9,9 @@ function Login() {
     const [user, setUser] = useState(null);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();
+
+    const notify = (message) => toast.success(message);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -15,6 +20,10 @@ function Login() {
             email: username,
             password: password,
         });
+
+        localStorage.setItem("token", response.data.token);
+        notify(response.data.message);
+        navigate("/me");
     };
 
     return (
@@ -42,6 +51,7 @@ function Login() {
                 </div>
 
                 <button onClick={handleSubmit}>Login</button>
+                <Toaster />
             </form>
         </div>
     );

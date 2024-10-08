@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const zod = require("zod");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
 
 const MONGODB_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -15,12 +16,13 @@ const UserModel = require("./db");
 
 const app = express();
 
-app.use(express.json());
-app.use(cors());
+app.use([express.json(), cookieParser(), cors()]);
 
 // middleware to verify the token
 function verifyToken(req, res, next) {
-    const token = req.headers.token;
+    const token = req.cookies?.token;
+
+    console.log(token);
 
     if (!token) {
         res.status(401).json({
@@ -99,9 +101,10 @@ app.post("/login", async (req, res) => {
             JWT_SECRET
         );
 
+        res.cookie("token", token, { httpOnly: true, sameSite: "None" });
+
         res.status(200).json({
             message: "You are logged in",
-            token: token,
         });
     } else {
         res.status(401).json({

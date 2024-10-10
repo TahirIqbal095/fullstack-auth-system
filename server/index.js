@@ -60,18 +60,18 @@ app.post("/signup", async (req, res) => {
     const validPassword = passwordSchema.safeParse(password);
 
     if (!validEmail.success || !validPassword.success) {
-        res.json({
+        res.status(400).json({
             message:
                 "please provide a correct format of email and passwod should be atleast 6 characters",
         });
         return;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const isUser = await UserModel.findOne({
         email: email,
     });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     if (!isUser) {
         await UserModel.create({
@@ -80,12 +80,27 @@ app.post("/signup", async (req, res) => {
             password: hashedPassword,
         });
 
-        res.json({
-            message: "you are signed up",
+        const token = jwt.sign(
+            {
+                email: email,
+            },
+            JWT_SECRET
+        );
+
+        res.cookie("token", token, {
+            domain: "localhost",
+            httpOnly: true,
+            path: "/",
+            secure: true,
+            sameSite: "none",
+        });
+
+        res.status(200).json({
+            message: "account created successfully",
         });
     } else {
         res.status(409).json({
-            message: "username already exists",
+            message: "email already exists",
         });
     }
 });

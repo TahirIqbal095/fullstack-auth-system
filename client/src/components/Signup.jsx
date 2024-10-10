@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -6,19 +7,27 @@ function Signup() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            const response = await axios.post(`${API_URL}/signup`, {
-                name: name,
-                email: email,
-                password: password,
+            const response = await fetch(`${API_URL}/signup`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    password: password,
+                }),
             });
 
             if (response.status === 200) {
-                alert("sign up successfull");
+                navigate("/me");
             }
         } catch (error) {
             console.log(error);

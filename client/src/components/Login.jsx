@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -16,14 +16,20 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const response = await axios.post(`${API_URL}/login`, {
-            email: username,
-            password: password,
+        const response = await fetch(`${API_URL}/login`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+                email: username,
+                password: password,
+            }),
         });
 
-        localStorage.setItem("token", response.data.token);
-        notify(response.data.message);
-        navigate("/me");
+        response.status === 200 ? navigate("/me") : "";
     };
 
     return (
@@ -51,7 +57,6 @@ function Login() {
                 </div>
 
                 <button onClick={handleSubmit}>Login</button>
-                <Toaster />
             </form>
         </div>
     );

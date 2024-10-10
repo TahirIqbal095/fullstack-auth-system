@@ -7,6 +7,8 @@ const zod = require("zod");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
+const fs = require("fs");
+const https = require("https");
 
 const MONGODB_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -16,13 +18,18 @@ const UserModel = require("./db");
 
 const app = express();
 
-app.use([express.json(), cookieParser(), cors()]);
+app.use([
+    express.json(),
+    cookieParser(),
+    cors({
+        origin: "http://localhost:5173",
+        credentials: true,
+    }),
+]);
 
 // middleware to verify the token
 function verifyToken(req, res, next) {
     const token = req.cookies?.token;
-
-    console.log(token);
 
     if (!token) {
         res.status(401).json({
@@ -101,7 +108,13 @@ app.post("/login", async (req, res) => {
             JWT_SECRET
         );
 
-        res.cookie("token", token, { httpOnly: true, sameSite: "None" });
+        res.cookie("token", token, {
+            domain: "localhost",
+            httpOnly: true,
+            path: "/",
+            secure: true,
+            sameSite: "none",
+        });
 
         res.status(200).json({
             message: "You are logged in",
@@ -133,4 +146,11 @@ app.get("/me", verifyToken, async (req, res) => {
     }
 });
 
-app.listen(3001, () => console.log("listing on port 3001"));
+const options = {
+    key: fs.readFileSync("localhost-key.pem"),
+    cert: fs.readFileSync("localhost.pem"),
+};
+
+https
+    .createServer(options, app)
+    .listen(3000, () => console.log("https server running on port 3000"));

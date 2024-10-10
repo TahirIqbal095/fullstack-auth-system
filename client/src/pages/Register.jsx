@@ -12,12 +12,13 @@ function Register() {
         <>
             <div>
                 {switchForm ? <Login /> : <Signup />}
-
-                {switchForm ? (
-                    <button onClick={handleSwitch}>Signup</button>
-                ) : (
-                    <button onClick={handleSwitch}>Login</button>
-                )}
+                <div style={{ marginTop: "5rem" }}>
+                    {switchForm ? (
+                        <button onClick={handleSwitch}>Signup</button>
+                    ) : (
+                        <button onClick={handleSwitch}>Login</button>
+                    )}
+                </div>
             </div>
         </>
     );

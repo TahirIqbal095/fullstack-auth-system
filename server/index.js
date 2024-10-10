@@ -98,31 +98,46 @@ app.post("/login", async (req, res) => {
         email: email,
     });
 
-    const passwordMatch = await bcrypt.compare(password, isUser?.password);
-
-    if (isUser && passwordMatch) {
-        const token = jwt.sign(
-            {
-                email: email,
-            },
-            JWT_SECRET
-        );
-
-        res.cookie("token", token, {
-            domain: "localhost",
-            httpOnly: true,
-            path: "/",
-            secure: true,
-            sameSite: "none",
-        });
-
-        res.status(200).json({
-            message: "You are logged in",
-        });
-    } else {
-        res.status(401).json({
+    if (!isUser) {
+        res.status(404).json({
             message: "user doesn't exist",
         });
+
+        return;
+    }
+
+    try {
+        const passwordMatch = await bcrypt.compare(password, isUser?.password);
+        if (isUser && passwordMatch) {
+            const token = jwt.sign(
+                {
+                    email: email,
+                },
+                JWT_SECRET
+            );
+
+            res.cookie("token", token, {
+                domain: "localhost",
+                httpOnly: true,
+                path: "/",
+                secure: true,
+                sameSite: "none",
+            });
+
+            res.status(200).json({
+                message: "You are logged in",
+            });
+        } else {
+            res.status(401).json({
+                message: "wrong email or password",
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: "something went wrong, please try again",
+        });
+
+        return;
     }
 });
 

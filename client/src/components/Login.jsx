@@ -1,17 +1,13 @@
-import axios from "axios";
 import { useState } from "react";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 function Login() {
-    const [user, setUser] = useState(null);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
-
-    const notify = (message) => toast.success(message);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,7 +25,14 @@ function Login() {
             }),
         });
 
-        response.status === 200 ? navigate("/me") : "";
+        const data = await response.json();
+
+        if (response.status === 200) {
+            toast.success(data.message);
+            navigate("/me");
+        } else {
+            toast.error(data.message);
+        }
     };
 
     return (

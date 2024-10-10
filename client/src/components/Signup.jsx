@@ -2,6 +2,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 const API_URL = import.meta.env.VITE_API_URL;
+import { toast } from "react-hot-toast";
 
 function Signup() {
     const [name, setName] = useState("");
@@ -26,8 +27,13 @@ function Signup() {
                 }),
             });
 
+            const data = await response.json();
+
             if (response.status === 200) {
+                toast.success(data.message);
                 navigate("/me");
+            } else {
+                toast.error(data.message);
             }
         } catch (error) {
             console.log(error);

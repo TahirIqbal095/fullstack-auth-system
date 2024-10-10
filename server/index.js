@@ -61,8 +61,7 @@ app.post("/signup", async (req, res) => {
 
     if (!validEmail.success || !validPassword.success) {
         res.status(400).json({
-            message:
-                "please provide a correct format of email and passwod should be atleast 6 characters",
+            message: "Please provide a valid email and passwod",
         });
         return;
     }

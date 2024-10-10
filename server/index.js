@@ -11,7 +11,8 @@ const fs = require("fs");
 const https = require("https");
 
 const MONGODB_URL = process.env.DATABASE_URL;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET_ACCESS = process.env.JWT_SECRET_ACCESS;
+const JWT_SECRET_REFRESH = process.env.JWT_SECRET_REFRESH;
 
 mongoose.connect(`${MONGODB_URL}/jwt-auth`);
 const UserModel = require("./db");
@@ -38,7 +39,7 @@ function verifyToken(req, res, next) {
         return;
     }
 
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    jwt.verify(token, JWT_SECRET_ACCESS, (err, decoded) => {
         if (err) {
             return res.status(401).json({
                 message: "Invalid token",
@@ -48,6 +49,29 @@ function verifyToken(req, res, next) {
         req.user = decoded;
         next();
     });
+}
+
+// function to generate the refresh and access token
+function generateToken(user) {
+    const accessToken = jwt.sign(
+        {
+            id: user._id,
+            email: user.email,
+        },
+        JWT_SECRET_ACCESS,
+        { expiresIn: "1m" }
+    );
+
+    const refreshToken = jwt.sign(
+        {
+            id: user._id,
+            email: user.email,
+        },
+        JWT_SECRET_REFRESH,
+        { expiresIn: "5m" }
+    );
+
+    return { accessToken, refreshToken };
 }
 
 app.post("/signup", async (req, res) => {
@@ -61,7 +85,7 @@ app.post("/signup", async (req, res) => {
 
     if (!validEmail.success || !validPassword.success) {
         res.status(400).json({
-            message: "Please provide a valid email and passwod",
+            message: "Please provide a valid email and password",
         });
         return;
     }
@@ -79,21 +103,6 @@ app.post("/signup", async (req, res) => {
             password: hashedPassword,
         });
 
-        const token = jwt.sign(
-            {
-                email: email,
-            },
-            JWT_SECRET
-        );
-
-        res.cookie("token", token, {
-            domain: "localhost",
-            httpOnly: true,
-            path: "/",
-            secure: true,
-            sameSite: "none",
-        });
-
         res.status(200).json({
             message: "account created successfully",
         });
@@ -108,11 +117,11 @@ app.post("/login", async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
 
-    const isUser = await UserModel.findOne({
+    const user = await UserModel.findOne({
         email: email,
     });
 
-    if (!isUser) {
+    if (!user) {
         res.status(404).json({
             message: "user doesn't exist",
         });
@@ -121,16 +130,11 @@ app.post("/login", async (req, res) => {
     }
 
     try {
-        const passwordMatch = await bcrypt.compare(password, isUser?.password);
-        if (isUser && passwordMatch) {
-            const token = jwt.sign(
-                {
-                    email: email,
-                },
-                JWT_SECRET
-            );
+        const passwordMatch = await bcrypt.compare(password, user?.password);
+        if (user && passwordMatch) {
+            const { accessToken } = generateToken(user);
 
-            res.cookie("token", token, {
+            res.cookie("token", accessToken, {
                 domain: "localhost",
                 httpOnly: true,
                 path: "/",

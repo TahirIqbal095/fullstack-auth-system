@@ -10,11 +10,13 @@ function Register() {
     };
     return (
         <>
-            <div>
-                {switchForm ? <Login /> : <Signup />}
-                <div style={{ marginTop: "5rem" }}>
+            <div className="w-full h-[100dvh] flex flex-col justify-center items-center">
+                <div className="">{switchForm ? <Login /> : <Signup />}</div>
+                <div className="mt-6">
                     {switchForm ? (
-                        <button onClick={handleSwitch}>Signup</button>
+                        <button onClick={handleSwitch} className="">
+                            Signup{" "}
+                        </button>
                     ) : (
                         <button onClick={handleSwitch}>Login</button>
                     )}

@@ -9,6 +9,9 @@ function Login() {
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
 
+    const inputClasses =
+        "w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow";
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -36,30 +39,37 @@ function Login() {
     };
 
     return (
-        <div>
-            <h1>Log in page</h1>
+        <div className="max-w-3xl p-4">
+            <h1 className="text-2xl font-bold text-gray-600">Log in</h1>
 
-            <form action="post">
+            <form action="post" className="space-y-3 mt-6">
                 <div>
-                    <span>Enter the email : </span>
                     <input
                         type="email"
                         name="email"
                         required
                         onChange={(e) => setUsername(e.target.value)}
+                        className={inputClasses}
+                        placeholder="Enter Email"
                     />
                 </div>
                 <div>
-                    <span>Enter the password : </span>
                     <input
                         type="password"
                         name="password"
                         required
                         onChange={(e) => setPassword(e.target.value)}
+                        className={inputClasses}
+                        placeholder="Enter password"
                     />
                 </div>
 
-                <button onClick={handleSubmit}>Login</button>
+                <button
+                    onClick={handleSubmit}
+                    className="mt-4 bg-gray-800 text-white px-5 py-2 rounded-md hover:bg-gray-900 text-sm"
+                >
+                    Login
+                </button>
             </form>
         </div>
     );

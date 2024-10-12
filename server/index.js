@@ -25,12 +25,13 @@ app.use([
     cors({
         origin: "http://localhost:5173",
         credentials: true,
+        exposedHeaders: ["authorization"],
     }),
 ]);
 
 // middleware to verify the token
 function verifyToken(req, res, next) {
-    const token = req.cookies?.token;
+    const token = req.headers["authorization"]?.split(" ")[1];
 
     if (!token) {
         res.status(401).json({
@@ -52,16 +53,19 @@ function verifyToken(req, res, next) {
 }
 
 // function to generate the refresh and access token
-function generateToken(user) {
+function generateAccessToken(user) {
     const accessToken = jwt.sign(
         {
-            id: user._id,
             email: user.email,
         },
         JWT_SECRET_ACCESS,
         { expiresIn: "1m" }
     );
 
+    return accessToken;
+}
+
+function generateRefreshToken(user) {
     const refreshToken = jwt.sign(
         {
             id: user._id,
@@ -71,8 +75,37 @@ function generateToken(user) {
         { expiresIn: "5m" }
     );
 
-    return { accessToken, refreshToken };
+    return refreshToken;
 }
+
+app.get("/refresh", (req, res) => {
+    const token = req.cookies?.refreshToken;
+
+    if (!token) {
+        res.status(401).json({
+            message: "unauthorized user",
+        });
+
+        return;
+    }
+
+    jwt.verify(token, JWT_SECRET_REFRESH, (err, decoded) => {
+        if (err) {
+            res.status(401).json({
+                message: "invalid token",
+            });
+
+            return;
+        } else {
+            const { accessToken } = generateAccessToken(decoded);
+
+            res.setHeader("Authorization", `Bearer ${accessToken}`);
+            res.status(200).json({
+                message: "New access token generated successfully",
+            });
+        }
+    });
+});
 
 app.post("/signup", async (req, res) => {
     const emailSchema = zod.string().email();
@@ -132,9 +165,10 @@ app.post("/login", async (req, res) => {
     try {
         const passwordMatch = await bcrypt.compare(password, user?.password);
         if (user && passwordMatch) {
-            const { accessToken } = generateToken(user);
+            const accessToken = generateAccessToken(user);
+            const refreshToken = generateRefreshToken(user);
 
-            res.cookie("token", accessToken, {
+            res.cookie("refreshToken", refreshToken, {
                 domain: "localhost",
                 httpOnly: true,
                 path: "/",
@@ -142,8 +176,9 @@ app.post("/login", async (req, res) => {
                 sameSite: "none",
             });
 
+            res.setHeader("Authorization", `Bearer ${accessToken}`);
             res.status(200).json({
-                message: "You are logged in",
+                message: "Login successful",
             });
         } else {
             res.status(401).json({

@@ -30,7 +30,13 @@ function Login() {
 
         const data = await response.json();
 
-        if (response.status === 200) {
+        if (response.ok) {
+            const accessToken = response.headers
+                .get("Authorization")
+                ?.split(" ")[1];
+
+            localStorage.setItem("accessToken", accessToken);
+
             toast.success(data.message);
             navigate("/me");
         } else {

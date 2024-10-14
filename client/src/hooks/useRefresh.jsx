@@ -12,8 +12,8 @@ function useRefresh() {
                 },
             });
 
-            if (!response.ok) {
-                throw new Error("Failed to refresh token");
+            if (response.status === 401) {
+                return null;
             }
 
             const accessToken = response.headers
@@ -21,7 +21,7 @@ function useRefresh() {
                 ?.split(" ")[1];
 
             if (!accessToken) {
-                throw new Error("Access token not found in response");
+                return null;
             }
 
             localStorage.setItem("accessToken", accessToken);

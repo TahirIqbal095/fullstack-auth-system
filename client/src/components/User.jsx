@@ -1,26 +1,19 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
 const API_URL = import.meta.env.VITE_API_URL;
 
 function User() {
     const [user, setUser] = useState(null);
+    const axiosPrivate = useAxiosPrivate();
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch(`${API_URL}/me`, {
-                    method: "GET",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "applicatio/json",
-                    },
-                });
-
-                const data = await response.json();
-                setUser(data);
+                const response = await axiosPrivate.get(`${API_URL}/me`);
+                setUser(response.data);
             } catch (error) {
                 navigate("/register");
                 toast.error("Something went wrong, please try again");

@@ -23,7 +23,7 @@ const useAxiosPrivate = () => {
         return () => {
             axiosPrivate.interceptors.response.eject(responseInterceptor);
         };
-    }, [accessToken]);
+    }, []);
 
     return axiosPrivate;
 };

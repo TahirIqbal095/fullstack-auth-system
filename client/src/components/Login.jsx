@@ -15,32 +15,31 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const response = await fetch(`${API_URL}/login`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
+        try {
+            const response = await fetch(`${API_URL}/login`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
 
-            body: JSON.stringify({
-                email: username,
-                password: password,
-            }),
-        });
+                body: JSON.stringify({
+                    email: username,
+                    password: password,
+                }),
+            });
 
-        const data = await response.json();
+            console.log(response);
+            const data = await response.json();
 
-        if (response.ok) {
-            const accessToken = response.headers
-                .get("Authorization")
-                ?.split(" ")[1];
-
-            localStorage.setItem("accessToken", accessToken);
-
-            toast.success(data.message);
-            navigate("/me");
-        } else {
-            toast.error(data.message);
+            if (response.status === 200) {
+                toast.success(data.message);
+                navigate("/me");
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            console.log("error while login ", error);
         }
     };
 

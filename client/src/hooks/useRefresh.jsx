@@ -15,17 +15,6 @@ function useRefresh() {
             if (response.status === 401) {
                 return null;
             }
-
-            const accessToken = response.headers
-                .get("Authorization")
-                ?.split(" ")[1];
-
-            if (!accessToken) {
-                return null;
-            }
-
-            localStorage.setItem("accessToken", accessToken);
-            return accessToken;
         } catch (error) {
             console.error("Error refreshing token:", error);
             return null;

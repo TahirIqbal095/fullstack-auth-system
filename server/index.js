@@ -31,7 +31,7 @@ app.use([
 
 // middleware to verify the token
 function verifyToken(req, res, next) {
-    const token = req.headers["authorization"]?.split(" ")[1];
+    const token = req.cookies?.accessToken;
 
     if (!token) {
         res.status(401).json({
@@ -97,9 +97,15 @@ app.get("/refresh", (req, res) => {
 
             return;
         } else {
-            const { accessToken } = generateAccessToken(decoded);
+            const accessToken = generateAccessToken(decoded);
 
-            res.setHeader("Authorization", `Bearer ${accessToken}`);
+            res.cookie("accessToken", accessToken, {
+                domain: "localhost",
+                httpOnly: true,
+                path: "/",
+                secure: true,
+                sameSite: "none",
+            });
             res.status(200).json({
                 message: "New access token generated successfully",
             });
@@ -175,8 +181,14 @@ app.post("/login", async (req, res) => {
                 secure: true,
                 sameSite: "none",
             });
+            res.cookie("accessToken", accessToken, {
+                domain: "localhost",
+                httpOnly: true,
+                path: "/",
+                secure: true,
+                sameSite: "none",
+            });
 
-            res.setHeader("Authorization", `Bearer ${accessToken}`);
             res.status(200).json({
                 message: "Login successful",
             });

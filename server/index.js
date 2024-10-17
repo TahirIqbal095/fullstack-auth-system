@@ -68,7 +68,6 @@ function generateAccessToken(user) {
 function generateRefreshToken(user) {
     const refreshToken = jwt.sign(
         {
-            id: user._id,
             email: user.email,
         },
         JWT_SECRET_REFRESH,
@@ -140,6 +139,28 @@ app.post("/signup", async (req, res) => {
             name: name,
             email: email,
             password: hashedPassword,
+        });
+
+        const accessToken = generateAccessToken({
+            email: email,
+        });
+        const refreshToken = generateRefreshToken({
+            email: email,
+        });
+
+        res.cookie("refreshToken", refreshToken, {
+            domain: "localhost",
+            httpOnly: true,
+            path: "/",
+            secure: true,
+            sameSite: "none",
+        });
+        res.cookie("accessToken", accessToken, {
+            domain: "localhost",
+            httpOnly: true,
+            path: "/",
+            secure: true,
+            sameSite: "none",
         });
 
         res.status(200).json({

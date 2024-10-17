@@ -1,17 +1,31 @@
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 const API_URL = import.meta.env.VITE_API_URL;
 import { toast } from "react-hot-toast";
 
+import { Button } from "@/components/ui/button";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ReloadIcon } from "@radix-ui/react-icons";
+
 function Signup() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
 
         try {
             const response = await fetch(`${API_URL}/signup`, {
@@ -37,44 +51,62 @@ function Signup() {
             }
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoading(false);
         }
     };
     return (
-        <div>
-            <h1>Sign Up page</h1>
-
-            <form action="post">
-                <div>
-                    <span>Enter you name : </span>
-                    <input
-                        type="text"
-                        name="name"
-                        required
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <span>Enter the email : </span>
-                    <input
-                        type="email"
-                        name="email"
-                        required
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <span>Enter the password : </span>
-                    <input
-                        type="password"
-                        name="password"
-                        required
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </div>
-
-                <button onClick={handleSubmit}>Signup</button>
-            </form>
-        </div>
+        <Card className="max-w-[350px]">
+            <CardHeader>
+                <CardTitle className="text-lg">Sign up</CardTitle>
+                <CardDescription>
+                    Enter your correct credentials and sign up
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form>
+                    <div className="grid w-full items-center gap-4">
+                        <div className="flex flex-col space-y-1.5">
+                            <Label htmlFor="password">Name</Label>
+                            <Input
+                                id="name"
+                                placeholder="Enter you name"
+                                type="text"
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col space-y-1.5">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="Enter your email"
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col space-y-1.5">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                                id="password"
+                                placeholder="Enter you password"
+                                type="password"
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </form>
+            </CardContent>
+            <CardFooter className="flex justify-end">
+                {loading ? (
+                    <Button disabled>
+                        <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                        Sign up
+                    </Button>
+                ) : (
+                    <Button onClick={handleSubmit}>Sign up</Button>
+                )}
+            </CardFooter>
+        </Card>
     );
 }
 

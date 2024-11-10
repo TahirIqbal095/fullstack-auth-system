@@ -42,8 +42,19 @@ userAuthRouter.post("/signup", async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({
-        message: "user created",
+    req.logIn(user, (innerError) => {
+        if (innerError) {
+            next(innerError);
+            res.status(501).json({
+                error: "failed to login",
+            });
+            return;
+        }
+
+        res.json({
+            name: user.name,
+            email: user.email,
+        });
     });
 });
 
